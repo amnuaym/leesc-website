@@ -106,6 +106,7 @@ const SERVICE_PAGES = [
   "services/ai-adoption.html",
   "services/cyber-security.html",
   "services/project-management.html",
+  "services/thailand-market-entry.html",
 ];
 const PAGES = ["index.html", "privacy.html", "404.html", ...SERVICE_PAGES];
 const PLACEHOLDER = /\{\{[A-Z][A-Z0-9_]*\}\}/;
@@ -377,14 +378,14 @@ test("the 404 page has no share tags (it is not meant to be shared or indexed)",
   assert.equal(findTags(html, "meta").some((m) => m.attrs.property === "og:image"), false);
 });
 
-test("home page descriptions agree with the six services shown on the page", async () => {
+test("home page descriptions agree with the seven services shown on the page", async () => {
   const html = await readPage("index.html");
   const metas = findTags(html, "meta");
   const description = metas.find((m) => m.attrs.name === "description").attrs.content;
   const ogDescription = metas.find((m) => m.attrs.property === "og:description").attrs.content;
   for (const text of [description, ogDescription]) {
     assert.doesNotMatch(text, /\bfour\b/i);
-    for (const topic of ["cyber security", "project management", "AI adoption", "digital transformation"]) {
+    for (const topic of ["cyber security", "project management", "AI adoption", "digital transformation", "market entry"]) {
       assert.ok(text.toLowerCase().includes(topic.toLowerCase()), `"${topic}" missing from: ${text}`);
     }
   }

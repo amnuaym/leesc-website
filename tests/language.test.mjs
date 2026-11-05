@@ -48,6 +48,7 @@ const PAGES = [
   "services/ai-adoption.html",
   "services/cyber-security.html",
   "services/project-management.html",
+  "services/thailand-market-entry.html",
 ];
 
 test("every page has a Thai text for each English text, and the same count", async () => {
