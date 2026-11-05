@@ -426,3 +426,40 @@ test("jsonLdBlocks throws on invalid JSON instead of hiding the problem", () => 
   assert.throws(() => jsonLdBlocks('<script type="application/ld+json">{bad</script>'), SyntaxError);
   assert.deepEqual(jsonLdBlocks("<p>none</p>"), []);
 });
+
+/* --------------------- Part 4: sliding service cards ----------------------- */
+
+test("the home page service cards form a carousel with one named dot per card", async () => {
+  const html = await readPage("index.html");
+  const tags = findAllTags(html);
+  const track = tags.find((t) => t.attrs.id === "service-track");
+  assert.ok(track, "track exists");
+  assert.equal(track.attrs.tabindex, "0", "track can be reached with the keyboard");
+  const carousel = tags.find((t) => t.attrs.id === "service-carousel");
+  assert.equal(carousel.attrs.role, "region");
+  assert.equal(carousel.attrs["aria-roledescription"], "carousel");
+
+  const section = html.slice(html.indexOf('id="service-track"'), html.indexOf('id="health-check"'));
+  const cards = (section.match(/<article class="card service-card"/g) ?? []).length;
+  const dots = (section.match(/<button type="button" class="carousel-dot">/g) ?? []).length;
+  assert.equal(cards, 7, "seven service cards");
+  assert.equal(dots, cards, "one dot per card");
+
+  const dotsGroup = tags.find((t) => t.attrs.id === "service-dots");
+  assert.notEqual(dotsGroup.attrs.hidden, undefined, "dots stay hidden until JavaScript runs");
+  assert.equal(dotsGroup.attrs.role, "group");
+});
+
+test("each carousel dot is named in both languages after its service", async () => {
+  const html = await readPage("index.html");
+  const dotButtons = [...html.matchAll(/<button type="button" class="carousel-dot"><span class="visually-hidden">(<span class="en">([^<]+)<\/span><span class="th" lang="th">([^<]+)<\/span>)<\/span><\/button>/g)];
+  assert.equal(dotButtons.length, 7);
+  const headings = [...html.matchAll(/<h3 id="svc-[a-z]+"><span class="en">([^<]+)<\/span><span class="th" lang="th">([^<]+)<\/span><\/h3>/g)];
+  assert.deepEqual(dotButtons.map((m) => [m[2], m[3]]), headings.map((m) => [m[1], m[2]]));
+});
+
+test("main.js only starts the carousel when the home page markup is present", async () => {
+  const main = await readFile(join(SITE, "assets/js/main.js"), "utf8");
+  assert.match(main, /getElementById\("service-carousel"\) !== null/);
+  assert.match(main, /import \{ initCarousel \} from "\.\/carousel\.js"/);
+});

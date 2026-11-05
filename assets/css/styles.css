@@ -1151,6 +1151,87 @@ a:hover {
   color: var(--color-accent);
 }
 
+/* ---------- Sliding service cards (home page) ----------
+   One card sits in the middle; the neighbours peek in from each side.
+   Scroll snapping does the sliding, so touch, keyboard and wheel work without JavaScript. */
+.carousel {
+  --card-width: min(24rem, 78vw);
+}
+
+.cards.carousel-track {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.25rem calc(50% - var(--card-width) / 2) 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  background: none;
+  border: 0;
+}
+
+.carousel-track > .card {
+  flex: 0 0 var(--card-width);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  border: 1px solid var(--color-border);
+}
+
+/* With JavaScript the dots replace the scroll bar. */
+.carousel.is-ready .carousel-track {
+  scrollbar-width: none;
+}
+
+.carousel.is-ready .carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+/* The button is a comfortable 44 x 44 pixel target; the visible dot is smaller. */
+.carousel-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.carousel-dot::before {
+  content: "";
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.carousel-dot[aria-current="true"] {
+  color: var(--color-accent);
+}
+
+.carousel-dot[aria-current="true"]::before {
+  width: 1.5rem;
+  border-radius: 0.5rem;
+  background: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-dot::before {
+    transition: none;
+  }
+}
+
 /* ---------- Service detail pages ---------- */
 .page-hero {
   padding-block: clamp(3.5rem, 8vw, 6rem);
