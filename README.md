@@ -91,3 +91,12 @@ A new service area needs changes in these places:
 ## How the contact form works
 
 The website cannot send email by itself. The form checks the visitor's input, then opens the visitor's own email program with the message filled in. The visitor presses send there. If you later want messages delivered without the visitor's email program, you will need a form service or your own small server.
+
+## Release notes
+
+### Version 1.1.0 — 2026-11-09
+
+- **Interactive flash cards:** Elevated styling and smooth scaling for the active card in the middle. The service number badge lights up with the accent color. Inactive side cards can be clicked directly to slide them to the center.
+- **Infinite looping:** Cloned card sets before and after allow circular sliding past card 07 to card 01, and before card 01 to card 07. Silent scroll normalization resets position to the middle cycle without visual flicker.
+- **Accurate dot alignment:** Dot indicators now strictly match the card shown in the middle of the screen using viewport coordinates (`getBoundingClientRect`).
+- **Smooth sliding controls:** Added Previous and Next circular navigation buttons, keyboard arrow controls (Left Arrow and Right Arrow keys), and desktop mouse drag-to-scroll support. All 130 tests pass.

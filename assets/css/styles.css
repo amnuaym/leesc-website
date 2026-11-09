@@ -1152,45 +1152,152 @@ a:hover {
 }
 
 /* ---------- Sliding service cards (home page) ----------
-   One card sits in the middle; the neighbours peek in from each side.
+   Interactive, smooth flash cards with infinite looping, scale elevation for
+   the card in the middle, direct touch/mouse drag, and synchronized dot indicators.
    Scroll snapping does the sliding, so touch, keyboard and wheel work without JavaScript. */
 .carousel {
+  position: relative;
   --card-width: min(24rem, 78vw);
 }
 
 .cards.carousel-track {
+  position: relative;
   display: flex;
   gap: 1.25rem;
-  padding: 0.25rem calc(50% - var(--card-width) / 2) 0.75rem;
+  padding: 1rem calc(50% - var(--card-width) / 2) 1.5rem;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   background: none;
   border: 0;
+  touch-action: pan-x pan-y;
 }
 
 .carousel-track > .card {
   flex: 0 0 var(--card-width);
   scroll-snap-align: center;
   scroll-snap-stop: always;
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: 0 4px 16px rgba(15, 59, 92, 0.06);
+  transform: scale(0.94);
+  opacity: 0.78;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.35s ease,
+              border-color 0.35s ease,
+              opacity 0.35s ease;
+  will-change: transform, opacity;
+  user-select: none;
 }
 
-/* With JavaScript the dots replace the scroll bar. */
+/* Service number badge inside flash card */
+.carousel-track > .card .service-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  background: var(--color-surface-hover);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+/* Active middle card is elevated, 100% scale, and accented */
+.carousel-track > .card.is-active {
+  transform: scale(1.02);
+  opacity: 1;
+  border-color: var(--color-accent);
+  box-shadow: 0 16px 36px -8px rgba(15, 59, 92, 0.16),
+              0 0 0 1px var(--color-accent);
+  z-index: 2;
+}
+
+.carousel-track > .card.is-active .service-number {
+  background: var(--color-accent);
+  color: var(--color-bg);
+  transform: scale(1.05);
+}
+
+/* Inactive card hover */
+.carousel-track > .card:hover:not(.is-active) {
+  opacity: 0.92;
+  transform: scale(0.97) translateY(-2px);
+  border-color: var(--color-muted);
+  cursor: pointer;
+}
+
+/* With JavaScript ready, track enables smooth behavior and cursor styling */
 .carousel.is-ready .carousel-track {
   scrollbar-width: none;
+  cursor: grab;
 }
 
 .carousel.is-ready .carousel-track::-webkit-scrollbar {
   display: none;
 }
 
+.carousel-track.is-dragging {
+  cursor: grabbing !important;
+  scroll-behavior: auto !important;
+  scroll-snap-type: none !important;
+}
+
+/* Controls bar holding Previous button, Dots, and Next button */
+.carousel-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* Previous and Next circular navigation buttons */
+.carousel-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1.5px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.carousel-nav:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: scale(1.08);
+}
+
+.carousel-nav:active {
+  transform: scale(0.95);
+}
+
+.carousel-nav:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .carousel-dots {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   gap: 0.25rem;
-  margin-top: 0.75rem;
 }
 
 /* The button is a comfortable 44 x 44 pixel target; the visible dot is smaller. */
@@ -1213,7 +1320,14 @@ a:hover {
   height: 0.75rem;
   border: 2px solid currentColor;
   border-radius: 50%;
-  transition: width 0.2s ease, background-color 0.2s ease;
+  transition: width 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 0.25s ease,
+              border-radius 0.25s ease,
+              color 0.2s ease;
+}
+
+.carousel-dot:hover::before {
+  color: var(--color-text);
 }
 
 .carousel-dot[aria-current="true"] {
@@ -1221,14 +1335,22 @@ a:hover {
 }
 
 .carousel-dot[aria-current="true"]::before {
-  width: 1.5rem;
+  width: 1.75rem;
   border-radius: 0.5rem;
   background: currentColor;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .carousel-dot::before {
+  .carousel-track > .card,
+  .carousel-track > .card .service-number,
+  .carousel-dot::before,
+  .carousel-nav {
     transition: none;
+    transform: none !important;
+  }
+
+  .carousel-track {
+    scroll-behavior: auto !important;
   }
 }
 
