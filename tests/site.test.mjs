@@ -27,7 +27,7 @@ import { TOPICS } from "../assets/js/contact-logic.js";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SITE = ROOT;
 // Project tooling at the root, which is not part of the published website.
-const NOT_SITE = /^(scripts|tests|backup|node_modules|\.git|\.claude)([\\/]|$)|^(README\.md|package\.json|\.gitignore)$/;
+const NOT_SITE = /^(scripts|tests|backup|node_modules|\.git|\.claude)([\\/]|$)|^(README\.md|NoREADME\.md|LICENSE|package\.json|\.gitignore)$/;
 const CANONICAL_HOST = "https://www.leesc.in";
 
 /* ------------------------- Part 1: helper functions ------------------------ */
@@ -106,6 +106,7 @@ const SERVICE_PAGES = [
   "services/ai-adoption.html",
   "services/cyber-security.html",
   "services/project-management.html",
+  "services/thailand-market-entry.html",
 ];
 const PAGES = ["index.html", "privacy.html", "404.html", ...SERVICE_PAGES];
 const PLACEHOLDER = /\{\{[A-Z][A-Z0-9_]*\}\}/;
@@ -268,7 +269,7 @@ test("the form is hidden until JavaScript shows it, with a no-JavaScript message
   const html = await readPage("index.html");
   const form = findTags(html, "form").find((f) => f.attrs.id === "contact-form");
   assert.notEqual(form.attrs.hidden, undefined);
-  assert.match(html, /<noscript>[\s\S]*contact@leesc\.in[\s\S]*<\/noscript>/);
+  assert.match(html, /<noscript>[\s\S]*info@leesc\.in[\s\S]*<\/noscript>/);
 });
 
 test("structured data is valid JSON and matches the canonical address", async () => {
@@ -322,4 +323,143 @@ test("the site folder contains no unexpected file types", async () => {
     assert.ok(allowed.has(ext), `unexpected file type: ${entry}`);
     if (ext === "") assert.equal(base, "CNAME", `unexpected extensionless file: ${entry}`);
   }
+});
+
+/* ------------------------- Part 3: search and sharing ------------------------ */
+
+const INDEXABLE_PAGES = PAGES.filter((page) => page !== "404.html");
+
+/** Reads width and height from the header of a PNG file (the IHDR block). */
+async function pngSize(relative) {
+  const bytes = await readFile(join(SITE, relative));
+  const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  assert.ok(bytes.length >= 24, `${relative}: too small to be a PNG`);
+  signature.forEach((byte, i) => assert.equal(bytes[i], byte, `${relative}: not a PNG`));
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+}
+
+/** Returns every parsed JSON-LD block of a page. Throws when one is not valid JSON. */
+function jsonLdBlocks(html) {
+  return [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+}
+
+test("the share image exists and has the recommended 1200 x 630 size", async () => {
+  assert.deepEqual(await pngSize("assets/images/og-image.png"), { width: 1200, height: 630 });
+});
+
+test("pngSize rejects text that is not a PNG, and files that are too small", async () => {
+  await assert.rejects(() => pngSize("robots.txt"), /too small|not a PNG/);
+  await assert.rejects(() => pngSize("sitemap.xml"), /not a PNG/);
+});
+
+test("every indexable page has complete Open Graph and Twitter share tags", async () => {
+  for (const page of INDEXABLE_PAGES) {
+    const html = await readPage(page);
+    const metas = findTags(html, "meta");
+    const og = (name) => metas.find((m) => m.attrs.property === name)?.attrs.content;
+    const tw = (name) => metas.find((m) => m.attrs.name === name)?.attrs.content;
+    for (const name of ["og:title", "og:description", "og:url", "og:image", "og:image:alt", "og:site_name"]) {
+      assert.ok(og(name), `${page}: ${name}`);
+    }
+    assert.equal(og("og:image"), `${CANONICAL_HOST}/assets/images/og-image.png`, `${page}: og:image`);
+    assert.equal(og("og:image:width"), "1200", `${page}: og:image:width`);
+    assert.equal(og("og:image:height"), "630", `${page}: og:image:height`);
+    assert.equal(tw("twitter:card"), "summary_large_image", `${page}: twitter:card`);
+    for (const name of ["twitter:title", "twitter:description", "twitter:image", "twitter:image:alt"]) {
+      assert.ok(tw(name), `${page}: ${name}`);
+    }
+    const canonical = findTags(html, "link").find((l) => l.attrs.rel === "canonical").attrs.href;
+    assert.equal(og("og:url"), canonical, `${page}: og:url matches canonical`);
+  }
+});
+
+test("the 404 page has no share tags (it is not meant to be shared or indexed)", async () => {
+  const html = await readPage("404.html");
+  assert.equal(findTags(html, "meta").some((m) => m.attrs.property === "og:image"), false);
+});
+
+test("home page descriptions agree with the seven services shown on the page", async () => {
+  const html = await readPage("index.html");
+  const metas = findTags(html, "meta");
+  const description = metas.find((m) => m.attrs.name === "description").attrs.content;
+  const ogDescription = metas.find((m) => m.attrs.property === "og:description").attrs.content;
+  for (const text of [description, ogDescription]) {
+    assert.doesNotMatch(text, /\bfour\b/i);
+    for (const topic of ["cyber security", "project management", "AI adoption", "digital transformation", "market entry"]) {
+      assert.ok(text.toLowerCase().includes(topic.toLowerCase()), `"${topic}" missing from: ${text}`);
+    }
+  }
+});
+
+test("organization data has logo, contact point and profile links that point to real files", async () => {
+  const [org] = jsonLdBlocks(await readPage("index.html"));
+  assert.equal(org["@type"], "Organization");
+  assert.equal(org["@id"], `${CANONICAL_HOST}/#organization`);
+  assert.equal(org.logo, `${CANONICAL_HOST}/Logo.png`);
+  assert.equal(await exists("Logo.png"), true);
+  assert.equal(org.contactPoint[0].email, "info@leesc.in");
+  assert.ok(org.sameAs.length >= 1);
+  for (const link of org.sameAs) assert.match(link, /^https:\/\//);
+});
+
+test("each service page has Service and Breadcrumb data that match its address and heading", async () => {
+  for (const page of SERVICE_PAGES) {
+    const html = await readPage(page);
+    const blocks = jsonLdBlocks(html);
+    assert.equal(blocks.length, 1, `${page}: one JSON-LD block`);
+    const graph = blocks[0]["@graph"];
+    const service = graph.find((item) => item["@type"] === "Service");
+    const crumbs = graph.find((item) => item["@type"] === "BreadcrumbList");
+    assert.ok(service && crumbs, `${page}: Service and BreadcrumbList`);
+    const url = `${CANONICAL_HOST}/${page}`;
+    assert.equal(service.url, url, `${page}: service url`);
+    assert.equal(service.provider["@id"], `${CANONICAL_HOST}/#organization`);
+    const title = firstElementText(html, "title");
+    assert.ok(title.startsWith(service.name), `${page}: service name "${service.name}" vs title "${title}"`);
+    assert.deepEqual(crumbs.itemListElement.map((c) => c.position), [1, 2, 3]);
+    assert.equal(crumbs.itemListElement[2].item, url, `${page}: last breadcrumb`);
+    assert.equal(crumbs.itemListElement[2].name, service.name);
+  }
+});
+
+test("jsonLdBlocks throws on invalid JSON instead of hiding the problem", () => {
+  assert.throws(() => jsonLdBlocks('<script type="application/ld+json">{bad</script>'), SyntaxError);
+  assert.deepEqual(jsonLdBlocks("<p>none</p>"), []);
+});
+
+/* --------------------- Part 4: sliding service cards ----------------------- */
+
+test("the home page service cards form a carousel with one named dot per card", async () => {
+  const html = await readPage("index.html");
+  const tags = findAllTags(html);
+  const track = tags.find((t) => t.attrs.id === "service-track");
+  assert.ok(track, "track exists");
+  assert.equal(track.attrs.tabindex, "0", "track can be reached with the keyboard");
+  const carousel = tags.find((t) => t.attrs.id === "service-carousel");
+  assert.equal(carousel.attrs.role, "region");
+  assert.equal(carousel.attrs["aria-roledescription"], "carousel");
+
+  const section = html.slice(html.indexOf('id="service-track"'), html.indexOf('id="health-check"'));
+  const cards = (section.match(/<article class="card service-card"/g) ?? []).length;
+  const dots = (section.match(/<button type="button" class="carousel-dot">/g) ?? []).length;
+  assert.equal(cards, 7, "seven service cards");
+  assert.equal(dots, cards, "one dot per card");
+
+  const dotsGroup = tags.find((t) => t.attrs.id === "service-dots");
+  assert.notEqual(dotsGroup.attrs.hidden, undefined, "dots stay hidden until JavaScript runs");
+  assert.equal(dotsGroup.attrs.role, "group");
+});
+
+test("each carousel dot is named in both languages after its service", async () => {
+  const html = await readPage("index.html");
+  const dotButtons = [...html.matchAll(/<button type="button" class="carousel-dot"><span class="visually-hidden">(<span class="en">([^<]+)<\/span><span class="th" lang="th">([^<]+)<\/span>)<\/span><\/button>/g)];
+  assert.equal(dotButtons.length, 7);
+  const headings = [...html.matchAll(/<h3 id="svc-[a-z]+"><span class="en">([^<]+)<\/span><span class="th" lang="th">([^<]+)<\/span><\/h3>/g)];
+  assert.deepEqual(dotButtons.map((m) => [m[2], m[3]]), headings.map((m) => [m[1], m[2]]));
+});
+
+test("main.js only starts the carousel when the home page markup is present", async () => {
+  const main = await readFile(join(SITE, "assets/js/main.js"), "utf8");
+  assert.match(main, /getElementById\("service-carousel"\) !== null/);
+  assert.match(main, /import \{ initCarousel \} from "\.\/carousel\.js"/);
 });

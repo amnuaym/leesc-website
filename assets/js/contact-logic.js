@@ -214,7 +214,7 @@ export function validateContact(input) {
  * message ready to send. The website cannot send email by itself.
  *
  * @param {object} input Form values (see validateContact).
- * @param {string} recipient Our receiving address, for example "contact@leesc.in".
+ * @param {string} recipient Our receiving address, for example "info@leesc.in".
  * @returns {string} The mailto link.
  * @throws {TypeError} when `recipient` is not a safe email address.
  * @throws {ValidationError} when the form values are not acceptable.
@@ -222,7 +222,7 @@ export function validateContact(input) {
  */
 export function buildMailtoUrl(input, recipient) {
   if (typeof recipient !== "string" || !SAFE_RECIPIENT_PATTERN.test(recipient)) {
-    throw new TypeError("recipient must be a plain email address such as contact@leesc.in.");
+    throw new TypeError("recipient must be a plain email address such as info@leesc.in.");
   }
 
   const result = validateContact(input);

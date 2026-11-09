@@ -5,6 +5,7 @@
  *  - contact-logic.js: checks the contact form and builds the email link (unit tested).
  *  - hero-logic.js: checks the email box at the top and hands it to the contact form.
  *  - steps.js: makes the "How we work" steps interactive.
+ *  - carousel.js: adds the dot buttons to the sliding service cards.
  * This file only reads the page, shows messages, and wires events together.
  *
  * Without JavaScript the forms stay hidden and the visitor sees the direct
@@ -13,6 +14,7 @@
 import { buildMailtoUrl, ValidationError } from "./contact-logic.js";
 import { prepareHandoff } from "./hero-logic.js";
 import { initStepper } from "./steps.js";
+import { initCarousel } from "./carousel.js";
 import { chooseLanguage } from "./language.js";
 
 const FIELDS = Object.freeze(["name", "company", "email", "topic", "message"]);
@@ -229,5 +231,9 @@ initLanguage();
 // The "How we work" steps exist only on the home page, so other pages skip them.
 if (document.getElementById("steps") !== null) {
   initStepper(requireElement("steps"), requireElement("flow-caption"));
+}
+// The sliding service cards exist only on the home page.
+if (document.getElementById("service-carousel") !== null) {
+  initCarousel(requireElement("service-carousel"), requireElement("service-track"), requireElement("service-dots"));
 }
 initYear();
