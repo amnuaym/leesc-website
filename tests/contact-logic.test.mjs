@@ -15,7 +15,7 @@ import {
   buildMailtoUrl,
 } from "../assets/js/contact-logic.js";
 
-const RECIPIENT = "contact@leesc.in";
+const RECIPIENT = "info@leesc.in";
 
 /** A fully valid form. Tests change one field at a time. */
 function valid(overrides = {}) {
@@ -298,7 +298,7 @@ test("buildMailtoUrl throws RangeError when the link would be too long", () => {
 });
 
 test("buildMailtoUrl rejects unsafe or invalid recipients", () => {
-  for (const bad of [undefined, null, 5, "", "contact", "a?b@example.com", "a&b@example.com", "contact@leesc.in?cc=x@y.com", "a@b", " contact@leesc.in", "con tact@leesc.in", "a#b@example.com", "a/b@example.com"]) {
+  for (const bad of [undefined, null, 5, "", "contact", "a?b@example.com", "a&b@example.com", "info@leesc.in?cc=x@y.com", "a@b", " info@leesc.in", "con tact@leesc.in", "a#b@example.com", "a/b@example.com"]) {
     assert.throws(() => buildMailtoUrl(valid(), bad), TypeError, String(bad));
   }
 });

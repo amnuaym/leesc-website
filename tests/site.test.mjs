@@ -269,7 +269,7 @@ test("the form is hidden until JavaScript shows it, with a no-JavaScript message
   const html = await readPage("index.html");
   const form = findTags(html, "form").find((f) => f.attrs.id === "contact-form");
   assert.notEqual(form.attrs.hidden, undefined);
-  assert.match(html, /<noscript>[\s\S]*contact@leesc\.in[\s\S]*<\/noscript>/);
+  assert.match(html, /<noscript>[\s\S]*info@leesc\.in[\s\S]*<\/noscript>/);
 });
 
 test("structured data is valid JSON and matches the canonical address", async () => {
@@ -397,7 +397,7 @@ test("organization data has logo, contact point and profile links that point to 
   assert.equal(org["@id"], `${CANONICAL_HOST}/#organization`);
   assert.equal(org.logo, `${CANONICAL_HOST}/Logo.png`);
   assert.equal(await exists("Logo.png"), true);
-  assert.equal(org.contactPoint[0].email, "contact@leesc.in");
+  assert.equal(org.contactPoint[0].email, "info@leesc.in");
   assert.ok(org.sameAs.length >= 1);
   for (const link of org.sameAs) assert.match(link, /^https:\/\//);
 });
