@@ -15,7 +15,8 @@
   --color-text: #0b1620;
   --color-muted: #4e5f6e;
   --color-accent: #1f5fa8;
-  --color-button-bg: #1f5fa8;
+  --color-button-bg: #c8102e;
+  --color-pill-bg: #1f5fa8;
   --color-button-text: #ffffff;
   --color-hero-bg: #0b1620;
   --color-hero-text: #ffffff;
@@ -36,7 +37,8 @@
     --color-text: #f4f7fa;
     --color-muted: #b8c6d2;
     --color-accent: #8db8e8;
-    --color-button-bg: #1f5fa8;
+    --color-button-bg: #c8102e;
+    --color-pill-bg: #1f5fa8;
     --color-button-text: #ffffff;
     --color-hero-bg: #0b1620;
     --color-hero-text: #ffffff;
@@ -1531,7 +1533,7 @@ html {
 .btn {
   border-radius: 999px;
   padding: 0.8rem 1.6rem;
-  box-shadow: 0 10px 22px -14px rgba(31, 95, 168, 0.9);
+  box-shadow: 0 10px 22px -14px rgba(200, 16, 46, 0.9);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
@@ -1671,7 +1673,7 @@ html {
 }
 
 .lang-switch a[aria-current="true"] {
-  background: var(--color-button-bg);
+  background: var(--color-pill-bg);
   color: var(--color-button-text);
 }
 
