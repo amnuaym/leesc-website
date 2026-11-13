@@ -319,7 +319,7 @@ a:hover {
   background-color: var(--color-hero-bg);
   background-image:
     radial-gradient(circle at 78% 22%, rgba(31, 95, 168, 0.28), transparent 46%),
-    linear-gradient(to top, rgba(11, 22, 32, 0.96) 10%, rgba(11, 22, 32, 0.35) 70%),
+    linear-gradient(to top, rgba(27, 58, 92, 0.85) 10%, rgba(27, 58, 92, 0.3) 70%),
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: auto, auto, 4rem 4rem, 4rem 4rem;
@@ -529,7 +529,7 @@ a:hover {
 
 .tile-grid {
   background-image:
-    linear-gradient(to top, rgba(11, 22, 32, 0.97) 15%, rgba(11, 22, 32, 0.2) 75%),
+    linear-gradient(to top, rgba(27, 58, 92, 0.88) 15%, rgba(27, 58, 92, 0.15) 75%),
     linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
   background-size: auto, 2.5rem 2.5rem, 2.5rem 2.5rem;
@@ -537,13 +537,13 @@ a:hover {
 
 .tile-diagonal {
   background-image:
-    linear-gradient(to top, rgba(11, 22, 32, 0.97) 15%, rgba(11, 22, 32, 0.2) 75%),
+    linear-gradient(to top, rgba(27, 58, 92, 0.88) 15%, rgba(27, 58, 92, 0.15) 75%),
     repeating-linear-gradient(45deg, rgba(31, 95, 168, 0.28) 0 2px, transparent 2px 14px);
 }
 
 .tile-dots {
   background-image:
-    linear-gradient(to top, rgba(11, 22, 32, 0.97) 15%, rgba(11, 22, 32, 0.2) 75%),
+    linear-gradient(to top, rgba(27, 58, 92, 0.88) 15%, rgba(27, 58, 92, 0.15) 75%),
     radial-gradient(circle, rgba(255, 255, 255, 0.22) 1.5px, transparent 1.6px);
   background-size: auto, 1.4rem 1.4rem;
 }
@@ -707,25 +707,64 @@ a:hover {
   height: auto;
 }
 
-.flow-panel .bar-label {
-  font-size: 17px;
+.flow > * {
+  min-width: 0;
+}
+
+.plan-bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.15fr;
+  gap: 3px;
+}
+
+.plan-bars span {
+  padding: 0.7rem 0.5rem;
+  text-align: center;
+  color: #ffffff;
+  font-size: 1.0625rem;
   font-weight: 700;
-  fill: #ffffff;
+  line-height: 1.25;
 }
 
-.flow-panel .bar-sub {
-  font-size: 17px;
-  fill: var(--color-text);
+.plan-bars .stage-1,
+.plan-list .stage-1 { background-color: #2a6fbd; }
+.plan-bars .stage-2,
+.plan-list .stage-2 { background-color: #1f5fa8; }
+.plan-bars .stage-3,
+.plan-list .stage-3 { background-color: #174a85; }
+
+.plan-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.flow-panel .bar-rule {
-  stroke: var(--color-border);
-  stroke-width: 1;
+.plan-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  line-height: 1.45;
+  color: var(--color-text);
 }
 
-.flow-panel .stage-1 { fill: #2a6fbd; }
-.flow-panel .stage-2 { fill: #1f5fa8; }
-.flow-panel .stage-3 { fill: #174a85; }
+.plan-list .dot {
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  transform: translateY(0.1rem);
+}
+
+.plan-note {
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 1.125rem;
+  color: var(--color-muted);
+}
 
 .flow-caption {
   margin: 1.25rem 0 0;
@@ -818,7 +857,7 @@ a:hover {
 .diagram-wrap {
   padding: 1.5rem;
   border: 1px solid var(--color-dark-border);
-  background: #0e1822;
+  background: var(--color-hero-bg);
 }
 
 .diagram-wrap svg {
@@ -967,7 +1006,7 @@ a:hover {
   background-color: var(--color-hero-bg);
   color: #ffffff;
   background-image:
-    linear-gradient(to top, rgba(11, 22, 32, 0.96) 15%, rgba(11, 22, 32, 0.15) 80%),
+    linear-gradient(to top, rgba(27, 58, 92, 0.85) 15%, rgba(27, 58, 92, 0.12) 80%),
     linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
   background-size: auto, 2.5rem 2.5rem, 2.5rem 2.5rem;
@@ -1934,4 +1973,10 @@ html {
 
 .nav a.nav-line {
   padding: 0;
+}
+
+@media (min-width: 30rem) {
+  .plan-bars span {
+    white-space: nowrap;
+  }
 }
