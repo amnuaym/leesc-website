@@ -1893,3 +1893,19 @@ html {
 .nav-line:hover {
   filter: brightness(1.08);
 }
+
+/* Header menu: centre every item (text links, button, LINE icon, language switch) on one line. */
+.nav li {
+  display: flex;
+  align-items: center;
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.nav a.nav-line {
+  padding: 0;
+}
