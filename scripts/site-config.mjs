@@ -44,6 +44,7 @@ export const THAI_EVERYWHERE = Object.freeze({
   Home: "หน้าแรก",
   Services: "บริการ",
   Main: "เมนูหลัก",
+  "Chat with us on LINE": "แชตกับเราทาง LINE",
   Breadcrumb: "เส้นทางนำทาง",
   Qualifications: "คุณวุฒิ",
   "Tools and languages we work with": "เครื่องมือและภาษาที่เราใช้งาน",

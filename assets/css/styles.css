@@ -1876,3 +1876,20 @@ html {
 .cookie-banner [hidden] {
   display: none;
 }
+
+/* LINE icon in the top menu */
+.nav-line {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 7px;
+}
+
+.nav-line svg {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+}
+
+.nav-line:hover {
+  filter: brightness(1.08);
+}
