@@ -58,11 +58,12 @@ export function decideAnalytics(measurementId, savedChoice) {
  * Names of the sales-relevant clicks we count, chosen from the link address.
  * Returns null for any other link, so ordinary clicks are never reported.
  * @param {string} href
- * @returns {"email_click" | "line_click" | null}
+ * @returns {"email_click" | "line_click" | "contact_cta_click" | null}
  */
 export function classifyLink(href) {
   if (typeof href !== "string") return null;
   if (/^mailto:/i.test(href)) return "email_click";
   if (/^https:\/\/line\.me\//i.test(href)) return "line_click";
+  if (/(^|\/|\.html)#contact$/i.test(href)) return "contact_cta_click";
   return null;
 }

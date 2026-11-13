@@ -6,7 +6,8 @@
  * visitor accepts, so the HTML pages never contain an external script.
  *
  * Counted events (only after acceptance): page views, email clicks, LINE
- * clicks, and a "contact form" event when the message form is used.
+ * clicks, "Book a free talk" button clicks, and a "contact form" event when a valid
+ * message is handed to the visitor's email program.
  * No form content is ever sent.
  */
 import {
@@ -56,7 +57,7 @@ function loadAnalytics() {
   });
   const form = document.getElementById("contact-form");
   if (form !== null) {
-    form.addEventListener("submit", () => window.gtag("event", "contact_form", { page_path: location.pathname }));
+    form.addEventListener("contact:mail-opened", () => window.gtag("event", "contact_form", { page_path: location.pathname }));
   }
 }
 

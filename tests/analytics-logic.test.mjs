@@ -43,7 +43,8 @@ test("classifyLink names only email and LINE clicks", () => {
   assert.equal(classifyLink("mailto:info@leesc.in"), "email_click");
   assert.equal(classifyLink("MAILTO:info@leesc.in"), "email_click");
   assert.equal(classifyLink("https://line.me/R/ti/p/@jey9134y"), "line_click");
-  for (const other of ["/privacy.html", "https://example.com", "https://evil.com/line.me/", "", null, undefined]) {
+  for (const cta of ["#contact", "../index.html#contact", "/index.html#contact"]) assert.equal(classifyLink(cta), "contact_cta_click", cta);
+  for (const other of ["/privacy.html", "https://example.com", "https://evil.com/line.me/", "#contacts", "#services", "", null, undefined]) {
     assert.equal(classifyLink(other), null, String(other));
   }
 });

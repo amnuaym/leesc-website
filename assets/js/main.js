@@ -93,6 +93,8 @@ function handleSubmit(event, form, recipient) {
       form,
       `Your email program should open now with your message filled in. If it does not, please email us at ${recipient}.`,
     );
+    // Tells analytics.js that a valid message is being handed to the visitor's email program.
+    form.dispatchEvent(new CustomEvent("contact:mail-opened"));
     window.location.href = url;
   } catch (error) {
     if (error instanceof ValidationError) {
