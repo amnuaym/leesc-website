@@ -16,6 +16,7 @@ import { prepareHandoff } from "./hero-logic.js";
 import { initStepper } from "./steps.js";
 import { initCarousel } from "./carousel.js";
 import { chooseLanguage } from "./language.js";
+import { initAnalytics } from "./analytics.js";
 
 const FIELDS = Object.freeze(["name", "company", "email", "topic", "message"]);
 
@@ -237,3 +238,5 @@ if (document.getElementById("service-carousel") !== null) {
   initCarousel(requireElement("service-carousel"), requireElement("service-track"), requireElement("service-dots"));
 }
 initYear();
+// Cookie banner and Google Analytics: does nothing until a Measurement ID is set in analytics-logic.js.
+initAnalytics();

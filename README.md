@@ -2,7 +2,7 @@
 
 Static website for https://www.leesc.in, published with GitHub Pages straight from the root of this repository. `index.html` is the home page.
 
-- **No build step and no dependencies.** Plain HTML, CSS and JavaScript. No frameworks, no external fonts, no tracking.
+- **No build step and no dependencies.** Plain HTML, CSS and JavaScript. No frameworks, no external fonts. Google Analytics is built in but stays off until a Measurement ID is set in `assets/js/analytics-logic.js`; it loads only after a visitor accepts the cookie banner.
 - **Node.js is only needed for the tests and the preflight check** (version 20 or newer, built-in modules only).
 - **Two languages:** every visible text is written in Thai and English. Thai is the default; visitors switch with the TH | EN toggle.
 
@@ -30,6 +30,8 @@ assets/js/contact-logic.js  contact form checks and the mailto link (unit tested
 assets/js/hero-logic.js     checks the email box at the top of the home page
 assets/js/steps.js          the interactive "How we work" steps
 assets/js/language.js       rules for the Thai / English choice
+assets/js/analytics-logic.js cookie-choice rules and the GA4 Measurement ID (unit tested)
+assets/js/analytics.js      cookie banner and Google Analytics loader
 scripts/                    helper scripts for preflight and the tests
 tests/                      automated tests
 backup/                     old copies kept on this computer (not published, ignored by git)
