@@ -83,8 +83,8 @@ export const THAI_BY_PAGE = Object.freeze({
     [`Digital Transformation | ${SUFFIX_EN}`, `การเปลี่ยนผ่านดิจิทัล | ${COMPANY}`],
     ["Digital Transformation", "การเปลี่ยนผ่านดิจิทัล"],
     [
-      "Digital strategy, process redesign, accounting systems, UiPath automation and connected reporting, delivered in small, affordable steps for Thai companies.",
-      "กลยุทธ์ดิจิทัล การออกแบบกระบวนการใหม่ ระบบบัญชี ระบบอัตโนมัติด้วย UiPath และรายงานที่เชื่อมต่อกัน ทำทีละขั้นเล็ก ๆ ที่จ่ายไหวสำหรับบริษัทไทย",
+      "Digital strategy, process redesign, accounting systems, automation with UiPath or open-source tools, and connected reporting, delivered in small, affordable steps for Thai companies.",
+      "กลยุทธ์ดิจิทัล การออกแบบกระบวนการใหม่ ระบบบัญชี ระบบอัตโนมัติด้วย UiPath หรือเครื่องมือโอเพนซอร์ส และรายงานที่เชื่อมต่อกัน ทำทีละขั้นเล็ก ๆ ที่จ่ายไหวสำหรับบริษัทไทย",
     ],
   ],
   "services/solution-consulting.html": [
