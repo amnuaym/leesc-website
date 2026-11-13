@@ -3,7 +3,7 @@
  *
  * Cookie banner and Google Analytics 4, wired to the rules in
  * analytics-logic.js. Google's script is added from here, and only after the
- * visitor accepts, so the HTML pages never contain an external script.
+ * visitor allows the Analytics category, so the HTML pages never contain an external script.
  *
  * Counted events (only after acceptance): page views, email clicks, LINE
  * clicks, "Book a free talk" button clicks, and a "contact form" event when a valid
@@ -13,21 +13,26 @@
 import {
   GA_MEASUREMENT_ID,
   CONSENT_STORAGE_KEY,
+  acceptAll,
+  declineAll,
+  makeConsent,
+  parseConsent,
+  serializeConsent,
   decideAnalytics,
   classifyLink,
 } from "./analytics-logic.js";
 
-function readSavedChoice() {
+function readSavedConsent() {
   try {
-    return window.localStorage.getItem(CONSENT_STORAGE_KEY);
+    return parseConsent(window.localStorage.getItem(CONSENT_STORAGE_KEY));
   } catch {
     return null; // storage blocked: treat as "no choice yet"
   }
 }
 
-function saveChoice(choice) {
+function saveConsent(consent) {
   try {
-    window.localStorage.setItem(CONSENT_STORAGE_KEY, choice);
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, serializeConsent(consent));
   } catch {
     // Storage blocked: the choice applies to this page view only.
   }
@@ -73,6 +78,17 @@ function clearAnalyticsCookies() {
   }
 }
 
+/** One bilingual text. */
+const t = (en, th) => `<span class="en">${en}</span><span class="th" lang="th">${th}</span>`;
+
+/** One row of the Customize panel. */
+function buildRow(id, title, text, { locked = false } = {}) {
+  return (
+    `<label class="cookie-row"><input type="checkbox" data-category="${id}"${locked ? " checked disabled" : ""}>` +
+    `<span><strong>${title}</strong><br><span class="cookie-desc">${text}</span></span></label>`
+  );
+}
+
 function buildBanner() {
   // Each language has its own privacy page; the 404 page sets its language before this runs.
   const privacy = `/${document.documentElement.lang === "th" ? "th" : "en"}/privacy.html`;
@@ -81,32 +97,69 @@ function buildBanner() {
   banner.setAttribute("role", "region");
   banner.setAttribute("aria-label", "Cookies");
   banner.innerHTML =
-    '<p><span class="en">We would like to use analytics cookies to count visits to our pages. This helps us see which services interest visitors. It is your choice, and the site works the same either way. <a href="' + privacy + '">Privacy notice</a></span>' +
-    '<span class="th" lang="th">เราต้องการใช้คุกกี้วิเคราะห์เพื่อนับจำนวนผู้เข้าชมหน้าเว็บ เพื่อดูว่าบริการใดได้รับความสนใจ คุณเลือกได้ และเว็บไซต์ใช้งานได้เหมือนเดิมไม่ว่าจะเลือกอย่างไร <a href="' + privacy + '">ประกาศความเป็นส่วนตัว</a></span></p>' +
-    '<div class="cookie-actions">' +
-    '<button type="button" class="btn" data-consent="accepted"><span class="en">Accept</span><span class="th" lang="th">ยอมรับ</span></button>' +
-    '<button type="button" class="btn btn-outline" data-consent="declined"><span class="en">Decline</span><span class="th" lang="th">ปฏิเสธ</span></button>' +
+    "<p>" +
+    t(
+      `We use cookies to understand how our site is used. You can accept all, decline all, or choose by category. The site works the same either way. <a href="${privacy}">Privacy notice</a>`,
+      `เราใช้คุกกี้เพื่อทำความเข้าใจการใช้งานเว็บไซต์ คุณเลือกยอมรับทั้งหมด ปฏิเสธทั้งหมด หรือเลือกตามหมวดหมู่ได้ และเว็บไซต์ใช้งานได้เหมือนเดิมไม่ว่าจะเลือกอย่างไร <a href="${privacy}">ประกาศความเป็นส่วนตัว</a>`,
+    ) +
+    "</p>" +
+    '<div class="cookie-panel" hidden>' +
+    buildRow("necessary", t("Necessary", "จำเป็น"), t("Always on. Remembers your language and your cookie choice in your browser. Not used for tracking.", "เปิดตลอด จดจำภาษาและตัวเลือกคุกกี้ของคุณในเบราว์เซอร์ ไม่ใช้เพื่อติดตาม"), { locked: true }) +
+    buildRow("analytics", t("Analytics", "วิเคราะห์"), t("Google Analytics counts visits, pages viewed and clicks on our contact links.", "Google Analytics นับจำนวนผู้เข้าชม หน้าที่เปิดดู และการคลิกลิงก์ติดต่อของเรา")) +
+    buildRow("marketing", t("Marketing", "การตลาด"), t("We do not use any marketing or advertising tools at the moment. This is here for the future.", "ขณะนี้เราไม่ได้ใช้เครื่องมือการตลาดหรือโฆษณา หมวดนี้เตรียมไว้สำหรับอนาคต")) +
+    '<div class="cookie-actions"><button type="button" class="btn" data-action="save">' + t("Save my choices", "บันทึกตัวเลือกของฉัน") + "</button></div>" +
+    "</div>" +
+    '<div class="cookie-actions cookie-main-actions">' +
+    '<button type="button" class="btn" data-action="accept-all">' + t("Accept all", "ยอมรับทั้งหมด") + "</button>" +
+    '<button type="button" class="btn btn-outline" data-action="decline-all">' + t("Decline all", "ปฏิเสธทั้งหมด") + "</button>" +
+    '<button type="button" class="btn btn-outline" data-action="customize" aria-expanded="false">' + t("Customize", "ปรับแต่ง") + "</button>" +
     "</div>";
   return banner;
+}
+
+/** Applies a choice: remember it, close the banner, start or stop analytics. */
+function applyConsent(banner, consent) {
+  saveConsent(consent);
+  banner.remove();
+  if (consent.analytics) loadAnalytics();
+  else clearAnalyticsCookies();
 }
 
 function showBanner() {
   if (document.querySelector(".cookie-banner") !== null) return;
   const banner = buildBanner();
+  const panel = banner.querySelector(".cookie-panel");
+  const mainActions = banner.querySelector(".cookie-main-actions");
+
+  // When the visitor reopens the banner, show their current choice. A new visitor sees everything unticked.
+  const current = readSavedConsent() ?? declineAll();
+  for (const box of banner.querySelectorAll("input[data-category]")) {
+    if (!box.disabled) box.checked = current[box.dataset.category] === true;
+  }
+
   banner.addEventListener("click", (event) => {
-    const button = event.target instanceof Element ? event.target.closest("button[data-consent]") : null;
+    const button = event.target instanceof Element ? event.target.closest("button[data-action]") : null;
     if (button === null) return;
-    const choice = button.dataset.consent;
-    saveChoice(choice);
-    banner.remove();
-    if (choice === "accepted") loadAnalytics();
-    else clearAnalyticsCookies();
+    const action = button.dataset.action;
+    if (action === "accept-all") applyConsent(banner, acceptAll());
+    else if (action === "decline-all") applyConsent(banner, declineAll());
+    else if (action === "customize") {
+      panel.hidden = false;
+      mainActions.hidden = true; // the panel has its own Save button
+      panel.querySelector("input:not([disabled])").focus();
+    } else if (action === "save") {
+      const choices = {};
+      for (const box of banner.querySelectorAll("input[data-category]:not([disabled])")) {
+        choices[box.dataset.category] = box.checked;
+      }
+      applyConsent(banner, makeConsent(choices));
+    }
   });
   document.body.append(banner);
 }
 
 export function initAnalytics() {
-  const action = decideAnalytics(GA_MEASUREMENT_ID, readSavedChoice());
+  const action = decideAnalytics(GA_MEASUREMENT_ID, readSavedConsent());
   if (action === "load") loadAnalytics();
   if (action === "ask") showBanner();
 
@@ -117,13 +170,6 @@ export function initAnalytics() {
       control.hidden = true;
       continue;
     }
-    control.addEventListener("click", () => {
-      try {
-        window.localStorage.removeItem(CONSENT_STORAGE_KEY);
-      } catch {
-        // Nothing saved to remove.
-      }
-      showBanner();
-    });
+    control.addEventListener("click", showBanner);
   }
 }

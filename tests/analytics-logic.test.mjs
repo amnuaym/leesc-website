@@ -6,8 +6,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   GA_MEASUREMENT_ID,
+  CATEGORIES,
+  OPTIONAL_CATEGORIES,
   isValidMeasurementId,
-  readConsent,
+  makeConsent,
+  acceptAll,
+  declineAll,
+  parseConsent,
+  serializeConsent,
   decideAnalytics,
   classifyLink,
 } from "../assets/js/analytics-logic.js";
@@ -23,27 +29,51 @@ test("isValidMeasurementId accepts GA4 IDs and rejects everything else", () => {
   }
 });
 
-test("readConsent accepts only the two saved choices", () => {
-  assert.equal(readConsent("accepted"), "accepted");
-  assert.equal(readConsent("declined"), "declined");
-  for (const bad of [null, undefined, "", "yes", "ACCEPTED", 1]) assert.equal(readConsent(bad), null);
+test("necessary is always listed and never optional", () => {
+  assert.ok(CATEGORIES.includes("necessary"));
+  assert.equal(OPTIONAL_CATEGORIES.includes("necessary"), false);
 });
 
-test("decideAnalytics: nothing loads without a valid ID or without acceptance", () => {
+test("nothing is on unless clearly true", () => {
+  assert.deepEqual(makeConsent(), { analytics: false, marketing: false });
+  assert.deepEqual(makeConsent({ analytics: "yes", marketing: 1 }), { analytics: false, marketing: false });
+  assert.deepEqual(makeConsent({ analytics: true }), { analytics: true, marketing: false });
+  assert.deepEqual(acceptAll(), { analytics: true, marketing: true });
+  assert.deepEqual(declineAll(), { analytics: false, marketing: false });
+});
+
+test("a saved choice survives a round trip", () => {
+  for (const consent of [acceptAll(), declineAll(), makeConsent({ marketing: true })]) {
+    assert.deepEqual(parseConsent(serializeConsent(consent)), consent);
+  }
+});
+
+test("older saved values still work, and bad values mean no choice", () => {
+  assert.deepEqual(parseConsent("accepted"), { analytics: true, marketing: false });
+  assert.deepEqual(parseConsent("declined"), { analytics: false, marketing: false });
+  for (const bad of [null, undefined, "", "yes", "{bad", "null", '{"v":2,"analytics":true}', '{"analytics":true}', 7]) {
+    assert.equal(parseConsent(bad), null, String(bad));
+  }
+});
+
+test("decideAnalytics: nothing loads without a valid ID or without permission", () => {
   const id = "G-AB12CD34EF";
-  assert.equal(decideAnalytics("", "accepted"), "off");
-  assert.equal(decideAnalytics("bad", "accepted"), "off");
+  assert.equal(decideAnalytics("", acceptAll()), "off");
+  assert.equal(decideAnalytics("bad", acceptAll()), "off");
   assert.equal(decideAnalytics(id, null), "ask");
-  assert.equal(decideAnalytics(id, "garbage"), "ask");
-  assert.equal(decideAnalytics(id, "declined"), "silent");
-  assert.equal(decideAnalytics(id, "accepted"), "load");
+  assert.equal(decideAnalytics(id, declineAll()), "silent");
+  assert.equal(decideAnalytics(id, makeConsent({ marketing: true })), "silent");
+  assert.equal(decideAnalytics(id, makeConsent({ analytics: true })), "load");
+  assert.equal(decideAnalytics(id, acceptAll()), "load");
 });
 
-test("classifyLink names only email and LINE clicks", () => {
+test("classifyLink names only email, LINE and contact-button clicks", () => {
   assert.equal(classifyLink("mailto:info@leesc.in"), "email_click");
   assert.equal(classifyLink("MAILTO:info@leesc.in"), "email_click");
   assert.equal(classifyLink("https://line.me/R/ti/p/@jey9134y"), "line_click");
-  for (const cta of ["#contact", "../index.html#contact", "/index.html#contact"]) assert.equal(classifyLink(cta), "contact_cta_click", cta);
+  for (const cta of ["#contact", "../index.html#contact", "/index.html#contact"]) {
+    assert.equal(classifyLink(cta), "contact_cta_click", cta);
+  }
   for (const other of ["/privacy.html", "https://example.com", "https://evil.com/line.me/", "#contacts", "#services", "", null, undefined]) {
     assert.equal(classifyLink(other), null, String(other));
   }

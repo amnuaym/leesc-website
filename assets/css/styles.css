@@ -1846,3 +1846,33 @@ html {
   background: var(--color-accent);
   color: var(--color-bg);
 }
+
+.cookie-panel {
+  flex: 1 1 100%;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cookie-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.cookie-row input {
+  margin-top: 0.3rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.cookie-desc {
+  color: var(--color-muted);
+}
+
+.cookie-main-actions {
+  flex-wrap: wrap;
+}
+
+.cookie-banner [hidden] {
+  display: none;
+}
