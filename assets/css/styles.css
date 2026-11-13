@@ -1824,3 +1824,15 @@ html[data-lang="th"] body {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* The shared outline button is white for the dark hero; on the banner it needs theme colours. */
+.cookie-banner .btn-outline {
+  background: transparent;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.cookie-banner .btn-outline:hover {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
