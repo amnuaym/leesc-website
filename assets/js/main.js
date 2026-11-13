@@ -167,6 +167,15 @@ function initHeroForm() {
 }
 
 /** Keeps the footer year current. */
+/** Publishes the sticky header's real height to CSS, so anchor links land below it. */
+function initHeaderOffset() {
+  const header = document.querySelector(".site-header");
+  if (header === null) return;
+  const update = () => document.documentElement.style.setProperty("--header-height", `${header.offsetHeight}px`);
+  update();
+  window.addEventListener("resize", update);
+}
+
 function initYear() {
   const target = document.getElementById("year");
   if (target !== null) target.textContent = String(new Date().getFullYear());
@@ -240,5 +249,6 @@ if (document.getElementById("service-carousel") !== null) {
   initCarousel(requireElement("service-carousel"), requireElement("service-track"), requireElement("service-dots"));
 }
 initYear();
+initHeaderOffset();
 // Cookie banner and Google Analytics: does nothing until a Measurement ID is set in analytics-logic.js.
 initAnalytics();

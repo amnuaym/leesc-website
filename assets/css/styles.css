@@ -1511,6 +1511,12 @@ html[data-lang="th"] body {
   z-index: 40;
 }
 
+/* Keep anchor targets (menu links like #health-check) clear of the sticky header.
+   main.js sets --header-height to the real height, so it also works when the header wraps on phones. */
+html {
+  scroll-padding-top: calc(var(--header-height, 6rem) + 1rem);
+}
+
 .btn {
   border-radius: 999px;
   padding: 0.8rem 1.6rem;
