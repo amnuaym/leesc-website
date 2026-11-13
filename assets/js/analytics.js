@@ -74,13 +74,15 @@ function clearAnalyticsCookies() {
 }
 
 function buildBanner() {
+  // Each language has its own privacy page; the 404 page sets its language before this runs.
+  const privacy = `/${document.documentElement.lang === "th" ? "th" : "en"}/privacy.html`;
   const banner = document.createElement("div");
   banner.className = "cookie-banner";
   banner.setAttribute("role", "region");
   banner.setAttribute("aria-label", "Cookies");
   banner.innerHTML =
-    '<p><span class="en">We would like to use analytics cookies to count visits to our pages. This helps us see which services interest visitors. It is your choice, and the site works the same either way. <a href="/privacy.html">Privacy notice</a></span>' +
-    '<span class="th" lang="th">เราต้องการใช้คุกกี้วิเคราะห์เพื่อนับจำนวนผู้เข้าชมหน้าเว็บ เพื่อดูว่าบริการใดได้รับความสนใจ คุณเลือกได้ และเว็บไซต์ใช้งานได้เหมือนเดิมไม่ว่าจะเลือกอย่างไร <a href="/privacy.html">ประกาศความเป็นส่วนตัว</a></span></p>' +
+    '<p><span class="en">We would like to use analytics cookies to count visits to our pages. This helps us see which services interest visitors. It is your choice, and the site works the same either way. <a href="' + privacy + '">Privacy notice</a></span>' +
+    '<span class="th" lang="th">เราต้องการใช้คุกกี้วิเคราะห์เพื่อนับจำนวนผู้เข้าชมหน้าเว็บ เพื่อดูว่าบริการใดได้รับความสนใจ คุณเลือกได้ และเว็บไซต์ใช้งานได้เหมือนเดิมไม่ว่าจะเลือกอย่างไร <a href="' + privacy + '">ประกาศความเป็นส่วนตัว</a></span></p>' +
     '<div class="cookie-actions">' +
     '<button type="button" class="btn" data-consent="accepted"><span class="en">Accept</span><span class="th" lang="th">ยอมรับ</span></button>' +
     '<button type="button" class="btn btn-outline" data-consent="declined"><span class="en">Decline</span><span class="th" lang="th">ปฏิเสธ</span></button>' +

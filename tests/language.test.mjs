@@ -1,17 +1,11 @@
 /**
- * Tests for the English / Thai switch.
- * Part 1 tests language.js rules. Part 2 checks every real page has a Thai
- * text for each English text, so the switch never shows a blank.
+ * Tests for the English / Thai rules in language.js (the saved choice and the
+ * browser-language detection used by the root page and the 404 page).
+ * The generated /th/ and /en/ pages are tested in language-split.test.mjs.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-import { chooseLanguage, nextLanguage, LANGUAGES, DEFAULT_LANGUAGE } from "../assets/js/language.js";
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SITE = ROOT;
+import { chooseLanguage, nextLanguage, detectLanguage, LANGUAGES, DEFAULT_LANGUAGE, LANGUAGE_STORAGE_KEY } from "../assets/js/language.js";
 
 /* ------------------------------ language.js ------------------------------ */
 
@@ -36,54 +30,27 @@ test("nextLanguage rejects unknown languages", () => {
   }
 });
 
-/* --------------------------- every page is bilingual ---------------------- */
+test("detectLanguage: a saved choice wins over the browser's language list", () => {
+  assert.equal(detectLanguage("en", ["th-TH", "th"]), "en");
+  assert.equal(detectLanguage("th", ["en-US"]), "th");
+});
 
-const PAGES = [
-  "index.html",
-  "privacy.html",
-  "404.html",
-  "services/digital-transformation.html",
-  "services/solution-consulting.html",
-  "services/it-operations-governance.html",
-  "services/ai-adoption.html",
-  "services/cyber-security.html",
-  "services/project-management.html",
-  "services/thailand-market-entry.html",
-];
+test("detectLanguage: without a saved choice the first supported browser language wins", () => {
+  assert.equal(detectLanguage(null, ["th-TH", "en-US"]), "th");
+  assert.equal(detectLanguage(null, ["th"]), "th");
+  assert.equal(detectLanguage(null, ["en-GB", "th"]), "en");
+  assert.equal(detectLanguage(null, ["fr-FR", "TH-th"]), "th", "skips unsupported languages, ignores case");
+});
 
-test("every page has a Thai text for each English text, and the same count", async () => {
-  for (const page of PAGES) {
-    const html = await readFile(join(SITE, page), "utf8");
-    const english = (html.match(/class="en"/g) ?? []).length;
-    const thai = (html.match(/class="th"/g) ?? []).length;
-    assert.ok(english > 0, `${page}: has English text`);
-    assert.equal(thai, english, `${page}: Thai count matches English count`);
+test("detectLanguage: anything unusable falls back to English", () => {
+  for (const saved of [null, undefined, "", "fr", "TH", 5]) {
+    assert.equal(detectLanguage(saved, []), "en", `saved ${String(saved)}`);
+  }
+  for (const browser of [undefined, null, "th", {}, [], ["fr-FR", "de"], [null, 5, ""]]) {
+    assert.equal(detectLanguage(null, browser), "en", JSON.stringify(browser));
   }
 });
 
-test("every page loads the language script and has the TH / EN toggle", async () => {
-  for (const page of PAGES) {
-    const html = await readFile(join(SITE, page), "utf8");
-    assert.match(html, /<div class="lang-switch" id="lang-switch" role="group"[^>]*hidden>/, `${page}: toggle`);
-    assert.match(html, /data-lang-choice="th"/, `${page}: Thai choice`);
-    assert.match(html, /data-lang-choice="en"/, `${page}: English choice`);
-    assert.match(html, /<script type="module" src="[^"]*assets\/js\/main\.js"><\/script>/, `${page}: script`);
-  }
-});
-
-test("every page starts in Thai, so the Thai text shows before any script runs", async () => {
-  for (const page of PAGES) {
-    const html = await readFile(join(SITE, page), "utf8");
-    assert.match(html, /<html lang="th" data-lang="th">/, `${page}: Thai by default`);
-  }
-});
-
-test("Thai text carries lang=\"th\" so screen readers pronounce it correctly", async () => {
-  for (const page of PAGES) {
-    const html = await readFile(join(SITE, page), "utf8");
-    const thaiSpans = html.match(/<span class="th"[^>]*>/g) ?? [];
-    for (const span of thaiSpans) {
-      assert.match(span, /lang="(th|en)"/, `${page}: ${span}`);
-    }
-  }
+test("the saved-choice key is unchanged, so choices saved before the split still work", () => {
+  assert.equal(LANGUAGE_STORAGE_KEY, "site-language");
 });

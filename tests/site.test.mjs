@@ -2,7 +2,8 @@
  * Tests for the real website files at the top level of this repository.
  * Part 1 tests the helper functions on small sample pages (including bad pages).
  * Part 2 checks the actual pages: structure, accessibility basics, links,
- * "zero dependency" rule, and consistency between files.
+ * "zero dependency" rule, and consistency between files. The site has a Thai
+ * and an English copy of every page (/th/ and /en/), so most checks run on both.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -99,7 +100,8 @@ test("resolveLocalRef resolves relative, root-relative, fragment and directory l
 
 /* --------------------------- Part 2: the real site ------------------------- */
 
-const SERVICE_PAGES = [
+const LANGUAGES = ["th", "en"];
+const SERVICE_FILES = [
   "services/digital-transformation.html",
   "services/solution-consulting.html",
   "services/it-operations-governance.html",
@@ -108,7 +110,19 @@ const SERVICE_PAGES = [
   "services/project-management.html",
   "services/thailand-market-entry.html",
 ];
-const PAGES = ["index.html", "privacy.html", "404.html", ...SERVICE_PAGES];
+/** The pages that exist once per language, named as in src/. */
+const BASE_FILES = ["index.html", "privacy.html", ...SERVICE_FILES];
+/** "th/index.html", "en/index.html", "th/privacy.html", ... */
+const LANGUAGE_PAGES = LANGUAGES.flatMap((language) => BASE_FILES.map((file) => `${language}/${file}`));
+const SERVICE_PAGES = LANGUAGES.flatMap((language) => SERVICE_FILES.map((file) => `${language}/${file}`));
+/** Old addresses that now only redirect to the Thai page. */
+const REDIRECT_PAGES = BASE_FILES.filter((file) => file !== "index.html");
+/** The site's root page: a language chooser. */
+const ROOT_PAGE = "index.html";
+const HOME_PAGES = LANGUAGES.map((language) => `${language}/index.html`);
+const PAGES = [ROOT_PAGE, "404.html", ...LANGUAGE_PAGES, ...REDIRECT_PAGES];
+/** Address of a language page on the canonical host: "th/index.html" -> ".../th/". */
+const addressOf = (page) => `${CANONICAL_HOST}/${page.replace(/index\.html$/, "")}`;
 const PLACEHOLDER = /\{\{[A-Z][A-Z0-9_]*\}\}/;
 
 async function readPage(name) {
@@ -139,9 +153,8 @@ test("every page has a doctype, language, charset, viewport and a sensible title
 
 test("indexable pages have a description and a correct canonical link", async () => {
   const expected = {
-    "index.html": `${CANONICAL_HOST}/`,
-    "privacy.html": `${CANONICAL_HOST}/privacy.html`,
-    ...Object.fromEntries(SERVICE_PAGES.map((page) => [page, `${CANONICAL_HOST}/${page}`])),
+    [ROOT_PAGE]: `${CANONICAL_HOST}/`,
+    ...Object.fromEntries(LANGUAGE_PAGES.map((page) => [page, addressOf(page)])),
   };
   for (const [page, canonical] of Object.entries(expected)) {
     const html = await readPage(page);
@@ -233,7 +246,11 @@ test("no insecure http:// links in any page", async () => {
 });
 
 test("every form control has a label, and error areas exist for each field", async () => {
-  const html = await readPage("index.html");
+  for (const page of HOME_PAGES) await checkFormControls(page);
+});
+
+async function checkFormControls(page) {
+  const html = await readPage(page);
   const labelTargets = new Set(findTags(html, "label").map((l) => l.attrs.for));
   const controls = findAllTags(html).filter((t) => ["input", "select", "textarea"].includes(t.name));
   assert.ok(controls.length >= 5);
@@ -246,39 +263,54 @@ test("every form control has a label, and error areas exist for each field", asy
     assert.ok(ids.has(`cf-${field}-error`), `error area for ${field}`);
   }
   assert.ok(ids.has("cf-status"), "status area");
-});
+}
 
-test("the form's topic list matches TOPICS in contact-logic.js exactly", async () => {
-  const html = await readPage("index.html");
-  const select = html.match(/<select id="cf-topic"[\s\S]*?<\/select>/)?.[0];
-  assert.ok(select, "topic select found");
-  const options = findTags(select, "option").map((o) => o.attrs.value).filter((v) => v !== "");
-  assert.deepEqual(options, [...TOPICS]);
+test("the form's topic list matches TOPICS in contact-logic.js exactly, in both languages", async () => {
+  for (const page of HOME_PAGES) {
+    const html = await readPage(page);
+    const select = html.match(/<select id="cf-topic"[\s\S]*?<\/select>/)?.[0];
+    assert.ok(select, `${page}: topic select found`);
+    const options = findTags(select, "option").map((o) => o.attrs.value).filter((v) => v !== "");
+    assert.deepEqual(options, [...TOPICS], page);
+    assert.equal(/data-th=/.test(select), false, `${page}: option labels are already in the page language`);
+  }
+  // Thai labels show on the Thai page and English labels on the English page.
+  const thai = await readPage("th/index.html");
+  const english = await readPage("en/index.html");
+  assert.match(thai, /<option value="Cyber Security">ความมั่นคงปลอดภัยไซเบอร์<\/option>/);
+  assert.match(english, /<option value="Cyber Security">Cyber Security<\/option>/);
 });
 
 test("the form recipient is a real address that also appears as a visible mailto link", async () => {
-  const html = await readPage("index.html");
-  const form = findTags(html, "form").find((f) => f.attrs.id === "contact-form");
-  assert.ok(form, "form found");
-  assert.match(form.attrs["data-recipient"], /^[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/);
-  const mailtos = findTags(html, "a").map((a) => a.attrs.href).filter((h) => h?.startsWith("mailto:"));
-  assert.ok(mailtos.includes(`mailto:${form.attrs["data-recipient"]}`));
+  for (const page of HOME_PAGES) {
+    const html = await readPage(page);
+    const form = findTags(html, "form").find((f) => f.attrs.id === "contact-form");
+    assert.ok(form, `${page}: form found`);
+    assert.match(form.attrs["data-recipient"], /^[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/);
+    const mailtos = findTags(html, "a").map((a) => a.attrs.href).filter((h) => h?.startsWith("mailto:"));
+    assert.ok(mailtos.includes(`mailto:${form.attrs["data-recipient"]}`), page);
+  }
 });
 
 test("the form is hidden until JavaScript shows it, with a no-JavaScript message", async () => {
-  const html = await readPage("index.html");
-  const form = findTags(html, "form").find((f) => f.attrs.id === "contact-form");
-  assert.notEqual(form.attrs.hidden, undefined);
-  assert.match(html, /<noscript>[\s\S]*info@leesc\.in[\s\S]*<\/noscript>/);
+  for (const page of HOME_PAGES) {
+    const html = await readPage(page);
+    const form = findTags(html, "form").find((f) => f.attrs.id === "contact-form");
+    assert.notEqual(form.attrs.hidden, undefined, page);
+    assert.match(html, /<noscript>[\s\S]*info@leesc\.in[\s\S]*<\/noscript>/, page);
+  }
 });
 
 test("structured data is valid JSON and matches the canonical address", async () => {
-  const html = await readPage("index.html");
-  const block = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
-  assert.ok(block, "JSON-LD block found");
-  const data = JSON.parse(block);
-  assert.equal(data["@type"], "Organization");
-  assert.equal(data.url, `${CANONICAL_HOST}/`);
+  for (const page of HOME_PAGES) {
+    const html = await readPage(page);
+    const block = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+    assert.ok(block, `${page}: JSON-LD block found`);
+    const data = JSON.parse(block);
+    assert.equal(data["@type"], "Organization");
+    // The organisation is one entity for both languages, so it keeps the root address.
+    assert.equal(data.url, `${CANONICAL_HOST}/`, page);
+  }
 });
 
 test("CNAME contains exactly the www domain", async () => {
@@ -287,10 +319,13 @@ test("CNAME contains exactly the www domain", async () => {
   assert.equal(text.trim().split(/\s+/).length, 1);
 });
 
-test("sitemap lists only real pages on the canonical host; robots points to the sitemap", async () => {
+test("sitemap lists the root and every language page, nothing else; robots points to the sitemap", async () => {
   const sitemap = await readFile(join(SITE, "sitemap.xml"), "utf8");
   const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-  assert.ok(urls.length >= 2);
+  assert.deepEqual([...urls].sort(), [`${CANONICAL_HOST}/`, ...LANGUAGE_PAGES.map(addressOf)].sort());
+  for (const alternate of sitemap.matchAll(/hreflang="[^"]+" href="([^"]+)"/g)) {
+    assert.ok(urls.includes(alternate[1]), `hreflang target ${alternate[1]} is listed in the sitemap`);
+  }
   for (const url of urls) {
     assert.ok(url.startsWith(`${CANONICAL_HOST}/`), url);
     const { file } = resolveLocalRef("index.html", url.slice(CANONICAL_HOST.length));
@@ -327,7 +362,7 @@ test("the site folder contains no unexpected file types", async () => {
 
 /* ------------------------- Part 3: search and sharing ------------------------ */
 
-const INDEXABLE_PAGES = PAGES.filter((page) => page !== "404.html");
+const INDEXABLE_PAGES = LANGUAGE_PAGES;
 
 /** Reads width and height from the header of a PNG file (the IHDR block). */
 async function pngSize(relative) {
@@ -370,6 +405,9 @@ test("every indexable page has complete Open Graph and Twitter share tags", asyn
     }
     const canonical = findTags(html, "link").find((l) => l.attrs.rel === "canonical").attrs.href;
     assert.equal(og("og:url"), canonical, `${page}: og:url matches canonical`);
+    const thai = page.startsWith("th/");
+    assert.equal(og("og:locale"), thai ? "th_TH" : "en_US", `${page}: og:locale`);
+    assert.equal(og("og:locale:alternate"), thai ? "en_US" : "th_TH", `${page}: og:locale:alternate`);
   }
 });
 
@@ -379,20 +417,25 @@ test("the 404 page has no share tags (it is not meant to be shared or indexed)",
 });
 
 test("home page descriptions agree with the seven services shown on the page", async () => {
-  const html = await readPage("index.html");
-  const metas = findTags(html, "meta");
-  const description = metas.find((m) => m.attrs.name === "description").attrs.content;
-  const ogDescription = metas.find((m) => m.attrs.property === "og:description").attrs.content;
-  for (const text of [description, ogDescription]) {
-    assert.doesNotMatch(text, /\bfour\b/i);
-    for (const topic of ["cyber security", "project management", "AI adoption", "digital transformation", "market entry"]) {
-      assert.ok(text.toLowerCase().includes(topic.toLowerCase()), `"${topic}" missing from: ${text}`);
+  const topics = {
+    en: ["cyber security", "project management", "AI adoption", "digital transformation", "market entry"],
+    th: ["ความมั่นคงปลอดภัยไซเบอร์", "การบริหารโครงการ", "การนำ AI มาใช้", "การเปลี่ยนผ่านดิจิทัล", "การเข้าสู่ตลาดไทย"],
+  };
+  for (const language of LANGUAGES) {
+    const metas = findTags(await readPage(`${language}/index.html`), "meta");
+    const description = metas.find((m) => m.attrs.name === "description").attrs.content;
+    const ogDescription = metas.find((m) => m.attrs.property === "og:description").attrs.content;
+    for (const text of [description, ogDescription]) {
+      if (language === "en") assert.doesNotMatch(text, /\bfour\b/i);
+      for (const topic of topics[language]) {
+        assert.ok(text.toLowerCase().includes(topic.toLowerCase()), `${language}: "${topic}" missing from: ${text}`);
+      }
     }
   }
 });
 
 test("organization data has logo, contact point and profile links that point to real files", async () => {
-  const [org] = jsonLdBlocks(await readPage("index.html"));
+  const [org] = jsonLdBlocks(await readPage("en/index.html"));
   assert.equal(org["@type"], "Organization");
   assert.equal(org["@id"], `${CANONICAL_HOST}/#organization`);
   assert.equal(org.logo, `${CANONICAL_HOST}/Logo.png`);
@@ -412,7 +455,11 @@ test("each service page has Service and Breadcrumb data that match its address a
     const crumbs = graph.find((item) => item["@type"] === "BreadcrumbList");
     assert.ok(service && crumbs, `${page}: Service and BreadcrumbList`);
     const url = `${CANONICAL_HOST}/${page}`;
+    const language = page.slice(0, 2);
     assert.equal(service.url, url, `${page}: service url`);
+    assert.equal(service["@id"], `${url}#service`, `${page}: service id`);
+    assert.equal(crumbs.itemListElement[0].item, `${CANONICAL_HOST}/${language}/`, `${page}: first breadcrumb`);
+    assert.equal(crumbs.itemListElement[1].item, `${CANONICAL_HOST}/${language}/#services`, `${page}: second breadcrumb`);
     assert.equal(service.provider["@id"], `${CANONICAL_HOST}/#organization`);
     const title = firstElementText(html, "title");
     assert.ok(title.startsWith(service.name), `${page}: service name "${service.name}" vs title "${title}"`);
@@ -430,7 +477,11 @@ test("jsonLdBlocks throws on invalid JSON instead of hiding the problem", () => 
 /* --------------------- Part 4: sliding service cards ----------------------- */
 
 test("the home page service cards form a carousel with one named dot per card", async () => {
-  const html = await readPage("index.html");
+  for (const page of HOME_PAGES) await checkCarousel(page);
+});
+
+async function checkCarousel(page) {
+  const html = await readPage(page);
   const tags = findAllTags(html);
   const track = tags.find((t) => t.attrs.id === "service-track");
   assert.ok(track, "track exists");
@@ -448,14 +499,19 @@ test("the home page service cards form a carousel with one named dot per card", 
   const dotsGroup = tags.find((t) => t.attrs.id === "service-dots");
   assert.notEqual(dotsGroup.attrs.hidden, undefined, "dots stay hidden until JavaScript runs");
   assert.equal(dotsGroup.attrs.role, "group");
-});
+}
 
-test("each carousel dot is named in both languages after its service", async () => {
-  const html = await readPage("index.html");
-  const dotButtons = [...html.matchAll(/<button type="button" class="carousel-dot"><span class="visually-hidden">(<span class="en">([^<]+)<\/span><span class="th" lang="th">([^<]+)<\/span>)<\/span><\/button>/g)];
-  assert.equal(dotButtons.length, 7);
-  const headings = [...html.matchAll(/<h3 id="svc-[a-z]+"><span class="en">([^<]+)<\/span><span class="th" lang="th">([^<]+)<\/span><\/h3>/g)];
-  assert.deepEqual(dotButtons.map((m) => [m[2], m[3]]), headings.map((m) => [m[1], m[2]]));
+test("each carousel dot is named after its service, in the page language", async () => {
+  for (const language of LANGUAGES) {
+    const html = await readPage(`${language}/index.html`);
+    const span = language === "th" ? '<span class="th" lang="th">' : '<span class="en">';
+    const dotPattern = new RegExp(`<button type="button" class="carousel-dot"><span class="visually-hidden">${span}([^<]+)</span></span></button>`, "g");
+    const headingPattern = new RegExp(`<h3 id="svc-[a-z]+">${span}([^<]+)</span></h3>`, "g");
+    const dots = [...html.matchAll(dotPattern)].map((m) => m[1]);
+    const headings = [...html.matchAll(headingPattern)].map((m) => m[1]);
+    assert.equal(dots.length, 7, language);
+    assert.deepEqual(dots, headings, language);
+  }
 });
 
 test("main.js only starts the carousel when the home page markup is present", async () => {

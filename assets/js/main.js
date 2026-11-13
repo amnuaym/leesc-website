@@ -15,7 +15,7 @@ import { buildMailtoUrl, ValidationError } from "./contact-logic.js";
 import { prepareHandoff } from "./hero-logic.js";
 import { initStepper } from "./steps.js";
 import { initCarousel } from "./carousel.js";
-import { chooseLanguage } from "./language.js";
+import { chooseLanguage, detectLanguage, LANGUAGE_STORAGE_KEY } from "./language.js";
 import { initAnalytics } from "./analytics.js";
 
 const FIELDS = Object.freeze(["name", "company", "email", "topic", "message"]);
@@ -172,10 +172,10 @@ function initYear() {
   if (target !== null) target.textContent = String(new Date().getFullYear());
 }
 
-/** Reads the saved language. Storage can be blocked, so failure falls back to English. */
+/** Reads the saved language. Storage can be blocked, so failure means "nothing saved". */
 function readSavedLanguage() {
   try {
-    return localStorage.getItem("site-language");
+    return localStorage.getItem(LANGUAGE_STORAGE_KEY);
   } catch {
     return null;
   }
@@ -184,47 +184,36 @@ function readSavedLanguage() {
 /** Saves the chosen language. If storage is blocked, the choice lasts for this page only. */
 function saveLanguage(language) {
   try {
-    localStorage.setItem("site-language", language);
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
   } catch {
     // Storage is unavailable (private window or blocked site data); nothing else to do.
   }
 }
 
 /**
- * Connects the English / Thai button. The page text is written in both
- * languages; the chosen one is shown through <html data-lang>. Without
- * JavaScript the button stays hidden and English is shown.
+ * Connects the TH / EN switch. Each language has its own pages (/th/ and /en/),
+ * so the switch is a plain link to the same page in the other language. The
+ * click only remembers the choice, so the site's root address can use it on
+ * the next visit, and keeps the #section the visitor was reading.
+ *
+ * The 404 page is one page for every address, so it marks itself
+ * data-lang="auto" and picks its language here.
  */
 function initLanguage() {
   const switcher = document.getElementById("lang-switch");
-  if (switcher === null) return;
-  const choices = switcher.querySelectorAll("[data-lang-choice]");
+  if (switcher !== null) {
+    for (const link of switcher.querySelectorAll("a[data-lang-choice]")) {
+      link.addEventListener("click", () => {
+        saveLanguage(chooseLanguage(link.dataset.langChoice));
+        if (location.hash !== "") link.hash = location.hash;
+      });
+    }
+  }
 
-  // Option labels in the contact form are swapped too (values stay English).
-  const options = document.querySelectorAll("option[data-th]");
-  for (const option of options) option.dataset.en = option.textContent;
-
-  let language = chooseLanguage(readSavedLanguage());
-
-  const apply = () => {
+  if (document.documentElement.dataset.lang === "auto") {
+    const language = detectLanguage(readSavedLanguage(), navigator.languages);
     document.documentElement.dataset.lang = language;
     document.documentElement.lang = language;
-    for (const option of options) {
-      option.textContent = language === "th" ? option.dataset.th : option.dataset.en;
-    }
-    for (const choice of choices) {
-      choice.setAttribute("aria-pressed", String(choice.dataset.langChoice === language));
-    }
-  };
-
-  apply();
-  switcher.hidden = false;
-  for (const choice of choices) {
-    choice.addEventListener("click", () => {
-      language = chooseLanguage(choice.dataset.langChoice);
-      saveLanguage(language);
-      apply();
-    });
   }
 }
 

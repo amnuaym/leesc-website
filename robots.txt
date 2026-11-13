@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /src/
 
 Sitemap: https://www.leesc.in/sitemap.xml

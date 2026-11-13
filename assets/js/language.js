@@ -31,3 +31,27 @@ export function nextLanguage(language) {
   }
   return language === "en" ? "th" : "en";
 }
+
+/** Key used to remember the visitor's language choice in their own browser. */
+export const LANGUAGE_STORAGE_KEY = "site-language";
+
+/**
+ * Picks the language for a visitor who opens the site's address (/) or an
+ * address that no longer exists (404). A saved choice wins. Otherwise the
+ * first supported language in the browser's preference list wins. When the
+ * browser asks for neither Thai nor English, English is used.
+ * @param {unknown} saved The value saved from an earlier visit, if any.
+ * @param {unknown} browserLanguages `navigator.languages`, for example ["fr-FR", "th"].
+ * @returns {"en" | "th"}
+ */
+export function detectLanguage(saved, browserLanguages) {
+  if (LANGUAGES.includes(saved)) return saved;
+  if (Array.isArray(browserLanguages)) {
+    for (const tag of browserLanguages) {
+      if (typeof tag !== "string") continue;
+      const primary = tag.toLowerCase().split("-")[0];
+      if (LANGUAGES.includes(primary)) return primary;
+    }
+  }
+  return "en";
+}
