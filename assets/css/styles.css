@@ -1522,6 +1522,12 @@ html {
   scroll-margin-top: 1.5rem;
 }
 
+/* Menu links to a whole section: skip most of the section's own top padding, so its title lands
+   about 1.5rem under the header. The number below must match the padding of .section. */
+.section[id] {
+  scroll-margin-top: calc(1.5rem - clamp(4rem, 9vw, 7rem));
+}
+
 .btn {
   border-radius: 999px;
   padding: 0.8rem 1.6rem;
