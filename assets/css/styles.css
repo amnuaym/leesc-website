@@ -1514,7 +1514,12 @@ html[data-lang="th"] body {
 /* Keep anchor targets (menu links like #health-check) clear of the sticky header.
    main.js sets --header-height to the real height, so it also works when the header wraps on phones. */
 html {
-  scroll-padding-top: calc(var(--header-height, 6rem) + 1rem);
+  scroll-padding-top: var(--header-height, 5rem);
+}
+
+/* Whole sections already have 4-7rem of their own top padding. Only the Health Check box starts right at its top edge, so it gets a small gap. */
+#health-check {
+  scroll-margin-top: 1.5rem;
 }
 
 .btn {
