@@ -65,12 +65,12 @@ export const THAI_BY_PAGE = Object.freeze({
   "index.html": [
     [`${SUFFIX_EN} | Clear, Safe Technology`, `${COMPANY} | เทคโนโลยีชัดเจนและปลอดภัย`],
     [
-      "Digital transformation, AI adoption, cyber security, project management, Thailand market entry and Fractional CTO: eight services for Thai and international companies.",
-      "การเปลี่ยนผ่านดิจิทัล การนำ AI มาใช้ ความมั่นคงปลอดภัยไซเบอร์ การบริหารโครงการ การเข้าสู่ตลาดไทย และ Fractional CTO: แปดบริการสำหรับบริษัทไทยและต่างประเทศ",
+      "Digital transformation, AI adoption, cyber security, project management, Thailand market entry and Fractional CTO: professional services for Thai and international companies.",
+      "การเปลี่ยนผ่านดิจิทัล การนำ AI มาใช้ ความมั่นคงปลอดภัยไซเบอร์ การบริหารโครงการ การเข้าสู่ตลาดไทย และ Fractional CTO: บริการสำหรับบริษัทไทยและต่างประเทศอย่างมืออาชีพ",
     ],
     [
-      "Eight service areas: digital transformation, solution consulting, IT operation and governance, AI adoption, cyber security, project management, Thailand market entry and Fractional CTO and Head of IT.",
-      "แปดด้านบริการ: การเปลี่ยนผ่านดิจิทัล การให้คำปรึกษาด้านโซลูชัน การดำเนินงานไอทีและธรรมาภิบาล การนำ AI มาใช้ ความมั่นคงปลอดภัยไซเบอร์ การบริหารโครงการ การเข้าสู่ตลาดไทย และ Fractional CTO และ Head of IT",
+      "Our service areas: digital transformation, solution consulting, IT operation and governance, AI adoption, cyber security, project management, Thailand market entry and Fractional CTO and Head of IT.",
+      "บริการของเรา: การเปลี่ยนผ่านดิจิทัล การให้คำปรึกษาด้านโซลูชัน การดำเนินงานไอทีและธรรมาภิบาล การนำ AI มาใช้ ความมั่นคงปลอดภัยไซเบอร์ การบริหารโครงการ การเข้าสู่ตลาดไทย และ Fractional CTO และ Head of IT",
     ],
   ],
   "privacy.html": [
