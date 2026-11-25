@@ -107,6 +107,7 @@ const SERVICE_PAGES = [
   "services/cyber-security.html",
   "services/project-management.html",
   "services/thailand-market-entry.html",
+  "services/fractional-cto-head-of-it.html",
 ];
 const PAGES = ["index.html", "privacy.html", "404.html", ...SERVICE_PAGES];
 const PLACEHOLDER = /\{\{[A-Z][A-Z0-9_]*\}\}/;
@@ -378,14 +379,14 @@ test("the 404 page has no share tags (it is not meant to be shared or indexed)",
   assert.equal(findTags(html, "meta").some((m) => m.attrs.property === "og:image"), false);
 });
 
-test("home page descriptions agree with the seven services shown on the page", async () => {
+test("home page descriptions agree with the eight services shown on the page", async () => {
   const html = await readPage("index.html");
   const metas = findTags(html, "meta");
   const description = metas.find((m) => m.attrs.name === "description").attrs.content;
   const ogDescription = metas.find((m) => m.attrs.property === "og:description").attrs.content;
   for (const text of [description, ogDescription]) {
     assert.doesNotMatch(text, /\bfour\b/i);
-    for (const topic of ["cyber security", "project management", "AI adoption", "digital transformation", "market entry"]) {
+    for (const topic of ["cyber security", "project management", "AI adoption", "digital transformation", "market entry", "Fractional CTO"]) {
       assert.ok(text.toLowerCase().includes(topic.toLowerCase()), `"${topic}" missing from: ${text}`);
     }
   }
@@ -442,7 +443,7 @@ test("the home page service cards form a carousel with one named dot per card", 
   const section = html.slice(html.indexOf('id="service-track"'), html.indexOf('id="health-check"'));
   const cards = (section.match(/<article class="card service-card"/g) ?? []).length;
   const dots = (section.match(/<button type="button" class="carousel-dot">/g) ?? []).length;
-  assert.equal(cards, 7, "seven service cards");
+  assert.equal(cards, 8, "eight service cards");
   assert.equal(dots, cards, "one dot per card");
 
   const dotsGroup = tags.find((t) => t.attrs.id === "service-dots");
@@ -453,7 +454,7 @@ test("the home page service cards form a carousel with one named dot per card", 
 test("each carousel dot is named in both languages after its service", async () => {
   const html = await readPage("index.html");
   const dotButtons = [...html.matchAll(/<button type="button" class="carousel-dot"><span class="visually-hidden">(<span class="en">([^<]+)<\/span><span class="th" lang="th">([^<]+)<\/span>)<\/span><\/button>/g)];
-  assert.equal(dotButtons.length, 7);
+  assert.equal(dotButtons.length, 8);
   const headings = [...html.matchAll(/<h3 id="svc-[a-z]+"><span class="en">([^<]+)<\/span><span class="th" lang="th">([^<]+)<\/span><\/h3>/g)];
   assert.deepEqual(dotButtons.map((m) => [m[2], m[3]]), headings.map((m) => [m[1], m[2]]));
 });
