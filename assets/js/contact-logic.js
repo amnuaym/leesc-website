@@ -23,6 +23,7 @@ export const TOPICS = Object.freeze([
   "AI Adoption",
   "Cyber Security",
   "Project Management",
+  "Fractional CTO and Head of IT",
   "Technology Health Check",
   "Something else",
 ]);
