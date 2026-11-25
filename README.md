@@ -13,7 +13,7 @@ src/                        THE SOURCE: edit these. Each text is written twice (
   index.html                home page
   privacy.html              privacy notice
   404.html                  "page not found" page
-  services/                 one page per service area (seven pages, see "Adding a service")
+  services/                 one page per service area (eight pages, see "Adding a service")
 scripts/build-languages.mjs generates the folders below from src/ (npm run build)
 scripts/site-config.mjs     the page list, sitemap dates and the Thai head text (titles, descriptions, labels)
 th/  en/                    GENERATED Thai and English pages. Do not edit by hand

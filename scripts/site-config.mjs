@@ -17,15 +17,16 @@ export const LANGUAGES = Object.freeze(["th", "en"]);
  * `lastmod` goes into sitemap.xml: change it when a page's content changes.
  */
 export const PAGES = Object.freeze([
-  { file: "index.html", lastmod: "2026-11-13" },
-  { file: "privacy.html", lastmod: "2026-11-13" },
-  { file: "services/digital-transformation.html", lastmod: "2026-11-13" },
-  { file: "services/solution-consulting.html", lastmod: "2026-11-13" },
-  { file: "services/it-operations-governance.html", lastmod: "2026-11-13" },
-  { file: "services/ai-adoption.html", lastmod: "2026-11-13" },
-  { file: "services/cyber-security.html", lastmod: "2026-11-13" },
-  { file: "services/project-management.html", lastmod: "2026-11-13" },
-  { file: "services/thailand-market-entry.html", lastmod: "2026-11-13" },
+  { file: "index.html", lastmod: "2026-11-25" },
+  { file: "privacy.html", lastmod: "2026-11-25" },
+  { file: "services/digital-transformation.html", lastmod: "2026-11-25" },
+  { file: "services/solution-consulting.html", lastmod: "2026-11-25" },
+  { file: "services/it-operations-governance.html", lastmod: "2026-11-25" },
+  { file: "services/ai-adoption.html", lastmod: "2026-11-25" },
+  { file: "services/cyber-security.html", lastmod: "2026-11-25" },
+  { file: "services/project-management.html", lastmod: "2026-11-25" },
+  { file: "services/thailand-market-entry.html", lastmod: "2026-11-25" },
+  { file: "services/fractional-cto-head-of-it.html", lastmod: "2026-11-25" },
 ]);
 
 /** Old addresses that now redirect to /th/... (everything except the home page). */
@@ -64,12 +65,12 @@ export const THAI_BY_PAGE = Object.freeze({
   "index.html": [
     [`${SUFFIX_EN} | Clear, Safe Technology`, `${COMPANY} | เทคโนโลยีชัดเจนและปลอดภัย`],
     [
-      "Digital transformation, AI adoption, cyber security, project management and Thailand market entry: seven services for Thai and international companies.",
-      "การเปลี่ยนผ่านดิจิทัล การนำ AI มาใช้ ความมั่นคงปลอดภัยไซเบอร์ การบริหารโครงการ และการเข้าสู่ตลาดไทย: เจ็ดบริการสำหรับบริษัทไทยและต่างประเทศ",
+      "Digital transformation, AI adoption, cyber security, project management, Thailand market entry and Fractional CTO: professional services for Thai and international companies.",
+      "การเปลี่ยนผ่านดิจิทัล การนำ AI มาใช้ ความมั่นคงปลอดภัยไซเบอร์ การบริหารโครงการ การเข้าสู่ตลาดไทย และ Fractional CTO: บริการสำหรับบริษัทไทยและต่างประเทศอย่างมืออาชีพ",
     ],
     [
-      "Seven service areas: digital transformation, solution consulting, IT operation and governance, AI adoption, cyber security, project management and Thailand market entry.",
-      "เจ็ดด้านบริการ: การเปลี่ยนผ่านดิจิทัล การให้คำปรึกษาด้านโซลูชัน การดำเนินงานไอทีและธรรมาภิบาล การนำ AI มาใช้ ความมั่นคงปลอดภัยไซเบอร์ การบริหารโครงการ และการเข้าสู่ตลาดไทย",
+      "Our service areas: digital transformation, solution consulting, IT operation and governance, AI adoption, cyber security, project management, Thailand market entry and Fractional CTO and Head of IT.",
+      "บริการของเรา: การเปลี่ยนผ่านดิจิทัล การให้คำปรึกษาด้านโซลูชัน การดำเนินงานไอทีและธรรมาภิบาล การนำ AI มาใช้ ความมั่นคงปลอดภัยไซเบอร์ การบริหารโครงการ การเข้าสู่ตลาดไทย และ Fractional CTO และ Head of IT",
     ],
   ],
   "privacy.html": [
@@ -133,6 +134,14 @@ export const THAI_BY_PAGE = Object.freeze({
     [
       "Market entry planning for international companies in Thailand: channel and partner strategy, partner search and management, launch support and a clear first-year plan.",
       "การวางแผนเข้าสู่ตลาดไทยสำหรับบริษัทต่างประเทศ: กลยุทธ์ช่องทางและพันธมิตร การค้นหาและบริหารพันธมิตร การสนับสนุนการเปิดตัว และแผนปีแรกที่ชัดเจน",
+    ],
+  ],
+  "services/fractional-cto-head-of-it.html": [
+    [`Fractional CTO and Head of IT | ${SUFFIX_EN}`, `Fractional CTO และ Head of IT | ${COMPANY}`],
+    ["Fractional CTO and Head of IT", "Fractional CTO และ Head of IT"],
+    [
+      "On-demand senior technology leadership: a Fractional CTO or Head of IT for urgent problems, digital transformation and advice that follows recognised good practice.",
+      "ผู้นำด้านเทคโนโลยีระดับอาวุโสตามที่ต้องการ: Fractional CTO หรือ Head of IT สำหรับปัญหาเร่งด่วน การเปลี่ยนผ่านดิจิทัล และคำแนะนำตามหลักปฏิบัติที่เป็นที่ยอมรับ",
     ],
   ],
 });

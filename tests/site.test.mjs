@@ -109,6 +109,7 @@ const SERVICE_FILES = [
   "services/cyber-security.html",
   "services/project-management.html",
   "services/thailand-market-entry.html",
+  "services/fractional-cto-head-of-it.html",
 ];
 /** The pages that exist once per language, named as in src/. */
 const BASE_FILES = ["index.html", "privacy.html", ...SERVICE_FILES];
@@ -416,7 +417,7 @@ test("the 404 page has no share tags (it is not meant to be shared or indexed)",
   assert.equal(findTags(html, "meta").some((m) => m.attrs.property === "og:image"), false);
 });
 
-test("home page descriptions agree with the seven services shown on the page", async () => {
+test("home page descriptions agree with the eight services shown on the page", async () => {
   const topics = {
     en: ["cyber security", "project management", "AI adoption", "digital transformation", "market entry"],
     th: ["ความมั่นคงปลอดภัยไซเบอร์", "การบริหารโครงการ", "การนำ AI มาใช้", "การเปลี่ยนผ่านดิจิทัล", "การเข้าสู่ตลาดไทย"],
@@ -493,7 +494,7 @@ async function checkCarousel(page) {
   const section = html.slice(html.indexOf('id="service-track"'), html.indexOf('id="health-check"'));
   const cards = (section.match(/<article class="card service-card"/g) ?? []).length;
   const dots = (section.match(/<button type="button" class="carousel-dot">/g) ?? []).length;
-  assert.equal(cards, 7, "seven service cards");
+  assert.equal(cards, 8, "eight service cards");
   assert.equal(dots, cards, "one dot per card");
 
   const dotsGroup = tags.find((t) => t.attrs.id === "service-dots");
@@ -509,7 +510,7 @@ test("each carousel dot is named after its service, in the page language", async
     const headingPattern = new RegExp(`<h3 id="svc-[a-z]+">${span}([^<]+)</span></h3>`, "g");
     const dots = [...html.matchAll(dotPattern)].map((m) => m[1]);
     const headings = [...html.matchAll(headingPattern)].map((m) => m[1]);
-    assert.equal(dots.length, 7, language);
+    assert.equal(dots.length, 8, language);
     assert.deepEqual(dots, headings, language);
   }
 });
